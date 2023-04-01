@@ -16,11 +16,11 @@ app.post("/auth/signup",async(req,res)=>{
     try{
 const token=await jwt.sign({id:"6427cab9780ef23821c6e561"},"secret_key")
 console.log(token) 
-
+const passwordHash=await bcrypt.hash(req.body.password,10)
 const data=await new dbModel({
   
     email:req.body.email,
-    password:req.body.password
+    password:passwordHash
 
 })
 
@@ -36,7 +36,7 @@ const data=await new dbModel({
 
 const securepass=async (password)=>{
     const passwordHash=await bcrypt.hash(password,10)
-    console.log(passwordHash)
+    // console.log(passwordHash)
 }
 securepass("pranav@gmail.com")
 
@@ -47,12 +47,22 @@ app.post("/auth/login",async(req,res)=>{
    const password=req.body.password
 
    let useremail=await dbModel.findOne({email:email})
-   if(useremail.password===password)
+   const passwordMatch=await bcrypt.compare(req.body.password,useremail.password)
+   console.log(useremail)
+   if(useremail){
+    
+   if(passwordMatch)
    {
-    res.status(201).send("login")
+    res.status(201).send("login gotcha")
    }
-
-   const passwordMatch=await bcrypt.compare(password,passwordHash)
+   else{
+    res.send('password invalid')
+   }
+   }
+   else{
+    res.send("invalid email")
+   }
+   
    console.log(passwordMatch)
    }
    catch(e){
